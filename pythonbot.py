@@ -184,4 +184,3 @@ while 1:
 		d=0
 		d2=False
 		reading=False
-		pass
