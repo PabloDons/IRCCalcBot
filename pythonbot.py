@@ -12,12 +12,17 @@ MASTER = "PabloPardons" #you
 readbuffer = "" #can't touch this.
 cmd = "calc " #what the bot looks for to execute commands
 
+passfile=open("password.txt","r")
+password=str(my_file.read())
+my_file.close()
+
 #getting connected
 s=socket.socket( )
 s.connect((HOST, PORT))
 s.send(bytes("NICK %s\r\n" % NICK, "latin1"))
 s.send(bytes("USER %s %s bla :%s\r\n" % (IDENT, HOST, REALNAME), "latin1"))
-s.send(bytes("JOIN %s\r\n" % (CHANNEL), "latin1"));
+s.send(bytes("JOIN %s\r\n" % (CHANNEL), "latin1"))
+s.send(bytes("PRIVMSG NickServ identify %s \r\n" % (password), "latin1"))
 
 #some variables
 array=[]
