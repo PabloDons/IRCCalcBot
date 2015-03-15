@@ -13,8 +13,8 @@ readbuffer = "" #can't touch this.
 cmd = "calc " #what the bot looks for to execute commands
 
 passfile=open("password.txt","r")
-password=str(my_file.read())
-my_file.close()
+password=str(passfile.read())
+passfile.close()
 
 #getting connected
 s=socket.socket( )
