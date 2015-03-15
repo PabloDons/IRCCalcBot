@@ -22,7 +22,7 @@ s.connect((HOST, PORT))
 s.send(bytes("NICK %s\r\n" % NICK, "latin1"))
 s.send(bytes("USER %s %s bla :%s\r\n" % (IDENT, HOST, REALNAME), "latin1"))
 s.send(bytes("JOIN %s\r\n" % (CHANNEL), "latin1"))
-s.send(bytes("PRIVMSG NickServ identify %s \r\n" % (password), "latin1"))
+s.send(bytes("PRIVMSG NickServ identify %s %s \r\n" % (IDENT, password), "latin1"))
 
 #some variables
 array=[]
