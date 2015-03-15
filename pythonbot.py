@@ -93,6 +93,7 @@ while 1:
 	if text.find('PING') != -1:		 #confirms connection to IRC
 		s.send(bytes('PONG ' + text.split() [1] + '\r\n', "latin1"))
 #quit bot when you type your cmd + quit + password(without space or +)
+	print (text)
 	if text.find(cmd + "quit") != -1:
 		if getname()==MASTER:
 			ircquit()
