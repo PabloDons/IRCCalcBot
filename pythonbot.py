@@ -22,7 +22,7 @@ s.connect((HOST, PORT))
 s.send(bytes("NICK %s\r\n" % NICK, "latin1"))
 s.send(bytes("USER %s %s bla :%s\r\n" % (IDENT, HOST, REALNAME), "latin1"))
 s.send(bytes("JOIN %s\r\n" % (CHANNEL), "latin1"))
-s.send(bytes("PRIVMSG NickServ identify %s %s \r\n" % (IDENT, password), "latin1"))
+s.send(bytes("PRIVMSG NickServ :identify %s \r\n" % (password), "latin1"))
 
 #some variables
 array=[]
@@ -38,6 +38,8 @@ output=0
 d=0
 d2=False
 reading=False
+appending=0
+removing=0
 #some functions
 def is_number(s):
     try:
@@ -87,13 +89,85 @@ def getname():
 		i=0
 	return "".join(array)
 	array=[]
+def calcexpression(arrayequation,c1):
+	i=0
+	output=0
+	e=True
+	array=[]
+	at1 = []
+	at2 = []
+	at3 = []
+	removing=0
+	if c1!=2:
+		return "Error! Your quotes where so bad my mom threw up..."
+		e=False
+	for n in arrayequation:
+		if isinstance(n, str) and is_number(n):
+			arrayequation[i]=calcexpression(list[int(n)],2)
+		i+=1
+	i=0
+	for n in arrayequation:
+		if n=="+" or n=="-":
+			at1.append(i)
+		elif n=="*" or n=="/":
+			at2.append(i)
+		elif is_number(n):
+			pass
+		else:
+			e=False
+		i+=1
+	i=0
+	for n in at2:
+		n-=removing
+		if arrayequation[n]=="*" and is_number(arrayequation[n+1]):
+			arrayequation[n+1]=arrayequation[n-1]*arrayequation[n+1]
+			del arrayequation[n]
+			del arrayequation[n-1]
+			removing+=2
+		elif arrayequation[n]=="/" and is_number(arrayequation[n+1]):
+			if e and arrayequation[n+1]==0:
+				e=False
+			else:
+				arrayequation[n+1]=arrayequation[n-1]/arrayequation[n+1]
+				del arrayequation[n]
+				del arrayequation[n-1]
+				removing+=2
+		i+=1
+	i=0
+	removing=0
+	for n in at1:
+		n-=removing
+		if arrayequation[n]=="-" and is_number(arrayequation[n+1]):
+			if i==0:
+				arrayequation[n+1]*=-1
+				del arrayequation[n]
+				removing+=1
+			else:
+				arrayequation[n+1]=arrayequation[n-1]-arrayequation[n+1]
+				del arrayequation[n]
+				del arrayequation[n-1]
+				removing+=2
+		elif arrayequation[n]=="+" and is_number(arrayequation[n+1]):
+			arrayequation[n+1]+=arrayequation[n-1]
+			del arrayequation[n]
+			del arrayequation[n-1]
+			removing+=2
+		i+=1
+	i=0
+	print (arrayequation)
+	if e:
+		for n in arrayequation:
+			output+=n
+		return output
+	else:
+		return "Error! There occoured an error while calculating"
+
 #what your bot does after its up and running
 while 1:
 	text = s.recv(2040).decode("latin1") #gets data from irc and decodes it to "latin1"
 	if text.find('PING') != -1:		 #confirms connection to IRC
 		s.send(bytes('PONG ' + text.split() [1] + '\r\n', "latin1"))
 #quit bot when you type your cmd + quit + password(without space or +)
-	print (text)
 	if text.find(cmd + "quit") != -1:
 		if getname()==MASTER:
 			ircquit()
@@ -101,92 +175,72 @@ while 1:
 	
 	if text.find(cmd + "help") != -1:
 		ircsend('syntax: calc "[expression]"')
+		ircsend('supported characters:')
+		ircsend('"*", "/", "+", "-"')
 	
-	if text.find(cmd + '"') != -1:
-		rawtext=str(text)
-		for a in rawtext:
-			if a == '"' and c1 == 1:
+	if text.find(cmd) != -1:
+		if text=="quit":
+			e=False
+		if text=="help":
+			e=False
+		c1=0
+		list=[[]]
+		appending=0
+		i=0
+		i2=0
+		for a in text:
+			if a == '"' and c1==1:
 				c1 = 2
 			if c1 == 1:
 				array.append(a)
 			if a == '"' and c1==0:
 				c1 = 1
+
 		equation="".join(array)
 		equation=equation.replace("+",",+,")
 		equation=equation.replace("-",",-,")
 		equation=equation.replace("*",",*,")
 		equation=equation.replace("/",",/,")
+		equation=equation.replace("(",",(,")
+		equation=equation.replace(")",",),")
+		equation=equation.replace(" ","")
 		arrayequation=equation.split(",")
-		i=0
-		for n in arrayequation:
-			if is_number(n) and n!="infinity" and n!="Infinity":
-				arrayequation[i]=float(arrayequation[i])
+		for a in arrayequation:
+			if is_number(a):
+				a=float(a)
+			if a=="":
+				pass
+			elif a == "(":
+				list.append([])
+				appending+=1
+				list[appending-1].append(str(appending))
+			elif a == ")":
+				appending-=1
+			else:
+				list[appending].append(a)
 			i+=1
 		i=0
-		for n in arrayequation:
-			if arrayequation[i]=="":
-				del arrayequation[i]
-			i+=1
+		if appending!=0:
+			e=False
+			ircsend("Error! Fix your parentheses")
+		if e:
+			ircsend(calcexpression(list[0],c1))
+
 		i=0
 		array=[]
-		if equation=="help":
-			pass
-		elif c1 < 2:
-			ircsend("Error! Did you remember quotes?")
-		elif doublenn(arrayequation):
-			ircsend("Error! Please doublecheck your expression")
-		elif equation=="9,+,10":
-			ircsend(21.0)
-		else:
-			for n in arrayequation:
-				if is_number(n):
-					arrayequation[i]=n
-				if n=="*" or n=="/":
-					at1.append(i)
-				if n=="+" or n=="-":
-					at2.append(i)
-				i+=1
-			i=0
-			for n in at2:
-				if arrayequation[n]=="-":
-					arrayequation[n+1]*=-1
-					arrayequation[n]=0
-				if arrayequation[n]=="+":
-					arrayequation[n]=0
-			for n in at1:
-				if arrayequation[n]=="*":
-					arrayequation[n+1]*=arrayequation[n-1]
-					arrayequation[n]=0
-					arrayequation[n-1]=0
-				if arrayequation[n]=="/":
-					if arrayequation[n+1]==0:
-						if e==0:
-							ircsend("Error! cannot devide by 0")
-						arrayequation[n]=0
-						e=1
-					else:
-						arrayequation[n+1]=arrayequation[n-1]/arrayequation[n+1]
-						arrayequation[n]=0
-						arrayequation[n-1]=0
-			for n in arrayequation:
-				if is_number(n) and n!="infinity" and n!="Infinity":
-					output+=n
-				elif e==0:
-					ircsend("Error! illegal characters")
-					e=1
-			if e==0:
-				ircsend(output)
 		c1 = 0
 		output = 0
 		c2 = 0
-		e = 0
+		e=True
 		array = []
 		at1 = []
 		at2 = []
 		at3 = []
 		arrayequation = []
 		equation = ""
-		fuckyou=False
 		d=0
+		removing=0
+		appending=0
 		d2=False
 		reading=False
+		list=[[]]
