@@ -12,8 +12,9 @@ MASTER = "PabloPardons" #you
 readbuffer = "" #can't touch this.
 cmd = "calc " #what the bot looks for to execute commands
 
+#getting the password for IRC
 passfile=open("password.txt","r")
-password=str(passfile.read())
+PASSWORD=str(passfile.read())
 passfile.close()
 
 #getting connected
@@ -22,7 +23,7 @@ s.connect((HOST, PORT))
 s.send(bytes("NICK %s\r\n" % NICK, "latin1"))
 s.send(bytes("USER %s %s bla :%s\r\n" % (IDENT, HOST, REALNAME), "latin1"))
 s.send(bytes("JOIN %s\r\n" % (CHANNEL), "latin1"))
-s.send(bytes("PRIVMSG NickServ :identify %s \r\n" % (password), "latin1"))
+s.send(bytes("PRIVMSG NickServ :identify %s \r\n" % (PASSWORD), "latin1"))
 
 #some variables
 array=[]
@@ -40,6 +41,8 @@ d2=False
 reading=False
 appending=0
 removing=0
+equation = ""
+equation2 = ""
 #some functions
 def is_number(s):
     try:
@@ -98,8 +101,9 @@ def calcexpression(arrayequation,c1):
 	at2 = []
 	at3 = []
 	removing=0
-	if c1!=2:
-		return "Error! Your quotes where so bad my mom threw up..."
+	removingfrom=0
+	if c1!=2 and e:
+		return "Error4! Your quotes where so bad my mom threw up..."
 		e=False
 	for n in arrayequation:
 		if isinstance(n, str) and is_number(n):
@@ -107,60 +111,91 @@ def calcexpression(arrayequation,c1):
 		i+=1
 	i=0
 	for n in arrayequation:
-		if n=="+" or n=="-":
+		if n=="+" or n=="-" and len(arrayequation)-1!=i:
 			at1.append(i)
-		elif n=="*" or n=="/":
+		elif n=="*" or n=="/" and len(arrayequation)-1!=i:
 			at2.append(i)
+		elif n=="^":
+			at3.append(i)
 		elif is_number(n):
 			pass
 		else:
 			e=False
 		i+=1
 	i=0
-	for n in at2:
-		n-=removing
-		if arrayequation[n]=="*" and is_number(arrayequation[n+1]):
-			arrayequation[n+1]=arrayequation[n-1]*arrayequation[n+1]
-			del arrayequation[n]
-			del arrayequation[n-1]
-			removing+=2
-		elif arrayequation[n]=="/" and is_number(arrayequation[n+1]):
-			if e and arrayequation[n+1]==0:
-				e=False
-			else:
-				arrayequation[n+1]=arrayequation[n-1]/arrayequation[n+1]
-				del arrayequation[n]
-				del arrayequation[n-1]
-				removing+=2
-		i+=1
-	i=0
-	removing=0
-	for n in at1:
-		n-=removing
-		if arrayequation[n]=="-" and is_number(arrayequation[n+1]):
-			if i==0:
-				arrayequation[n+1]*=-1
-				del arrayequation[n]
-				removing+=1
-			else:
-				arrayequation[n+1]=arrayequation[n-1]-arrayequation[n+1]
-				del arrayequation[n]
-				del arrayequation[n-1]
-				removing+=2
-		elif arrayequation[n]=="+" and is_number(arrayequation[n+1]):
-			arrayequation[n+1]+=arrayequation[n-1]
-			del arrayequation[n]
-			del arrayequation[n-1]
-			removing+=2
-		i+=1
-	i=0
-	print (arrayequation)
+	if e:
+		try:
+			for n in at3:
+				if removingfrom<i:
+					n-=removing
+				if arrayequation[n]=="^":
+					arrayequation[n+1]=arrayequation[n-1]**arrayequation[n+1]
+					del arrayequation[n-1]
+					del arrayequation[n-1]
+					removing+=2
+					if removingfrom>i:
+						removingfrom=i
+				i+=1
+			i=0
+			for n in at2:
+				if removingfrom<i:
+					n-=removing
+				if arrayequation[n]=="*":
+					arrayequation[n+1]=arrayequation[n-1]*arrayequation[n+1]
+					del arrayequation[n-1]
+					del arrayequation[n-1]
+					removing+=2
+					if removingfrom>i:
+						removingfrom=i
+				elif arrayequation[n]=="/":
+					arrayequation[n+1]=arrayequation[n-1]/arrayequation[n+1]
+					del arrayequation[n-1]
+					del arrayequation[n-1]
+					removing+=2
+					if removingfrom>i:
+						removingfrom=i
+				i+=1
+			i=0
+			for n in at1:
+				if removingfrom<i:
+					n-=removing
+				if n==0:
+					if arrayequation[n]=="-":
+						arrayequation[n+1]*=-1
+						del arrayequation[n]
+						removing+=1
+						if removingfrom>i:
+							removingfrom=i
+				else:
+					if arrayequation[n]=="-":
+						arrayequation[n+1]=arrayequation[n-1]-arrayequation[n+1]
+						arrayequation[n-1]
+						arrayequation[n-1]
+						removing+=2
+						if removingfrom>i:
+							removingfrom=i
+				if arrayequation[n]=="+":
+					arrayequation[n+1]+=arrayequation[n-1]
+					del arrayequation[n-1]
+					del arrayequation[n-1]
+					removing+=2
+					if removingfrom>i:
+						removingfrom=i
+				i+=1
+			i=0
+			for n in arrayequation:
+				if n=="<placeholder>":
+					arrayequation[i]=0
+				i+=1
+			i=0
+		except ValueError:
+			e=False
 	if e:
 		for n in arrayequation:
 			output+=n
 		return output
 	else:
-		return "Error! There occoured an error while calculating"
+		return "Error2! There occoured an error while calculating"
 
 #what your bot does after its up and running
 while 1:
@@ -173,28 +208,41 @@ while 1:
 			ircquit()
 			break
 	
-	if text.find(cmd + "help") != -1:
+	elif getname()=="Hastumer":
+		ircsend("Sorry, but you are blacklisted")
+	
+	elif text.find(cmd + "help") != -1:
 		ircsend('syntax: calc "[expression]"')
 		ircsend('supported characters:')
-		ircsend('"*", "/", "+", "-"')
+		ircsend('"*", "/", "+", "-", "()", "^"')
 	
-	if text.find(cmd) != -1:
-		if text=="quit":
-			e=False
-		if text=="help":
-			e=False
-		c1=0
-		list=[[]]
-		appending=0
+	elif text.find(cmd) != -1:
 		i=0
-		i2=0
+		array=[]
+		c1 = 0
+		output = 0
+		c2 = 0
+		e=True
+		array = []
+		at1 = []
+		at2 = []
+		at3 = []
+		arrayequation = []
+		equation = ""
+		equation2 = ""
+		d=0
+		removing=0
+		appending=0
+		d2=False
+		reading=False
+		list=[[]]
 		for a in text:
-			if a == '"' and c1==1:
-				c1 = 2
+			if a == '"' and c1>0:
+				c1 += 1
 			if c1 == 1:
 				array.append(a)
 			if a == '"' and c1==0:
-				c1 = 1
+				c1 += 1
 
 		equation="".join(array)
 		equation=equation.replace("+",",+,")
@@ -203,26 +251,39 @@ while 1:
 		equation=equation.replace("/",",/,")
 		equation=equation.replace("(",",(,")
 		equation=equation.replace(")",",),")
+		equation=equation.replace("^",",^,")
 		equation=equation.replace(" ","")
 		arrayequation=equation.split(",")
+		if equation.find("e")!=-1 and e:
+			e=False
+			ircsend("Error3! There occoured an error while calculating")
 		for a in arrayequation:
-			if is_number(a):
-				a=float(a)
 			if a=="":
 				pass
+			elif is_number(a):
+				c2=0
+				a=float(a)
+				list[appending].append(a)
+			elif a=="*" or a=="/" or a=="+" or a=="-" or a=="^":
+				c2+=1
+				list[appending].append(a)
 			elif a == "(":
 				list.append([])
 				appending+=1
 				list[appending-1].append(str(appending))
 			elif a == ")":
 				appending-=1
-			else:
-				list[appending].append(a)
+			elif e:
+				e=False
+				ircsend("Error5! There occoured an error while calculating")
+			if c2>1 and e:
+				e=False
+				ircsend("Error6! There occoured an error while calculating")
 			i+=1
 		i=0
 		if appending!=0:
 			e=False
-			ircsend("Error! Fix your parentheses")
+			ircsend("Error7! Fix your parentheses")
 		if e:
 			ircsend(calcexpression(list[0],c1))
 
@@ -238,6 +299,7 @@ while 1:
 		at3 = []
 		arrayequation = []
 		equation = ""
+		equation2 = ""
 		d=0
 		removing=0
 		appending=0
