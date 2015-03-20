@@ -123,72 +123,73 @@ def calcexpression(arrayequation,c1):
 			e=False
 		i+=1
 	i=0
+	removingfrom=len(arrayequation)
 	if e:
 		try:
 			for n in at3:
-				if removingfrom<i:
+				if removingfrom<n:
 					n-=removing
+				print ("before:",n,at3,removing,removingfrom, arrayequation,"(---3---)")
 				if arrayequation[n]=="^":
 					arrayequation[n+1]=arrayequation[n-1]**arrayequation[n+1]
-					del arrayequation[n-1]
+					del arrayequation[n]
 					del arrayequation[n-1]
 					removing+=2
-					if removingfrom>i:
-						removingfrom=i
+					if removingfrom>n:
+						removingfrom=n
+				print ("after:",n,at3,removing,removingfrom, arrayequation,"(---3---)")
 				i+=1
 			i=0
 			for n in at2:
-				if removingfrom<i:
+				if removingfrom<n:
 					n-=removing
+				print ("before:",n,at2,removing,removingfrom, arrayequation,"(---2---)")
 				if arrayequation[n]=="*":
 					arrayequation[n+1]=arrayequation[n-1]*arrayequation[n+1]
-					del arrayequation[n-1]
+					del arrayequation[n]
 					del arrayequation[n-1]
 					removing+=2
-					if removingfrom>i:
-						removingfrom=i
+					if removingfrom>n:
+						removingfrom=n
 				elif arrayequation[n]=="/":
 					arrayequation[n+1]=arrayequation[n-1]/arrayequation[n+1]
-					del arrayequation[n-1]
+					del arrayequation[n]
 					del arrayequation[n-1]
 					removing+=2
-					if removingfrom>i:
-						removingfrom=i
+					if removingfrom>n:
+						removingfrom=n
+				print ("after:",n,at2,removing,removingfrom, arrayequation,"(---2---)")
 				i+=1
 			i=0
 			for n in at1:
-				if removingfrom<i:
+				if removingfrom<n:
 					n-=removing
+				print ("before:",n,at1,removing,removingfrom, arrayequation,"(---1---)")
 				if n==0:
 					if arrayequation[n]=="-":
 						arrayequation[n+1]*=-1
 						del arrayequation[n]
 						removing+=1
-						if removingfrom>i:
-							removingfrom=i
+						if removingfrom>n:
+							removingfrom=n
 				else:
 					if arrayequation[n]=="-":
 						arrayequation[n+1]=arrayequation[n-1]-arrayequation[n+1]
-						arrayequation[n-1]
-						arrayequation[n-1]
+						del arrayequation[n]
+						del arrayequation[n-1]
 						removing+=2
-						if removingfrom>i:
-							removingfrom=i
-				if arrayequation[n]=="+":
-					arrayequation[n+1]+=arrayequation[n-1]
-					del arrayequation[n-1]
-					del arrayequation[n-1]
-					removing+=2
-					if removingfrom>i:
-						removingfrom=i
+						if removingfrom>n:
+							removingfrom=n
+					elif arrayequation[n]=="+":
+						arrayequation[n+1]+=arrayequation[n-1]
+						del arrayequation[n]
+						del arrayequation[n-1]
+						removing+=1
+						if removingfrom>n:
+							removingfrom=n
 				i+=1
 			i=0
-			for n in arrayequation:
-				if n=="<placeholder>":
-					arrayequation[i]=0
-				i+=1
-			i=0
-		except ValueError:
+		except (ValueError, ZeroDivisionError):
 			e=False
 	if e:
 		for n in arrayequation:
