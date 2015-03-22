@@ -92,6 +92,13 @@ def getname():
 		i=0
 	return "".join(array)
 	array=[]
+def findindex(list, string):
+	i=0
+	for n in list:
+		if n == string:
+			return i
+			break
+		i+=1
 def calcexpression(arrayequation,c1):
 	i=0
 	output=0
@@ -101,102 +108,103 @@ def calcexpression(arrayequation,c1):
 	at2 = []
 	at3 = []
 	removing=0
-	removingfrom=0
 	if c1!=2 and e:
-		return "Error4! Your quotes where so bad my mom threw up..."
+		return "Error1: quotes inconsistant"
 		e=False
 	for n in arrayequation:
 		if isinstance(n, str) and is_number(n):
-			arrayequation[i]=calcexpression(list[int(n)],2)
+			arrayequation[i]=calcexpression(inputlist[int(n)],2)
 		i+=1
 	i=0
 	for n in arrayequation:
-		if n=="+" or n=="-" and len(arrayequation)-1!=i:
-			at1.append(i)
-		elif n=="*" or n=="/" and len(arrayequation)-1!=i:
-			at2.append(i)
-		elif n=="^":
-			at3.append(i)
-		elif is_number(n):
+		if is_number(n) or n=="*" or n=="/" or n=="+" or n=="-" or n=="^":
 			pass
 		else:
 			e=False
 		i+=1
 	i=0
-	removingfrom=len(arrayequation)
+	length=len(arrayequation)
+	lengthrange=list(range(length))
+	lengthrange=lengthrange[::-1]
 	if e:
 		try:
-			for n in at3:
-				if removingfrom<n:
-					n-=removing
-				print ("before:",n,at3,removing,removingfrom, arrayequation,"(---3---)")
-				if arrayequation[n]=="^":
+			print("<--",arrayequation,"-->")
+			for n in lengthrange:
+				print (n, length, removing)
+				n=n-removing
+				if n<0:
+					break
+				if n>=len(arrayequation):
+					pass
+				elif arrayequation[n]=="^":
+					removing-=1
+					n=findindex(arrayequation,"^")
 					arrayequation[n+1]=arrayequation[n-1]**arrayequation[n+1]
 					del arrayequation[n]
 					del arrayequation[n-1]
 					removing+=2
-					if removingfrom>n:
-						removingfrom=n
-				print ("after:",n,at3,removing,removingfrom, arrayequation,"(---3---)")
-				i+=1
-			i=0
-			for n in at2:
-				if removingfrom<n:
-					n-=removing
-				print ("before:",n,at2,removing,removingfrom, arrayequation,"(---2---)")
-				if arrayequation[n]=="*":
+					print ("<--",3,arrayequation,n,"-->")
+			for n in lengthrange:
+				print (n, length, removing)
+				n=n-removing
+				if n<0:
+					break
+				if n>=len(arrayequation):
+					pass
+				elif arrayequation[n]=="*":
+					removing-=1
+					n=findindex(arrayequation,"*")
 					arrayequation[n+1]=arrayequation[n-1]*arrayequation[n+1]
 					del arrayequation[n]
 					del arrayequation[n-1]
 					removing+=2
-					if removingfrom>n:
-						removingfrom=n
+					print ("<--",2,arrayequation,n,"-->")
 				elif arrayequation[n]=="/":
+					removing-=1
+					n=findindex(arrayequation,"/")
 					arrayequation[n+1]=arrayequation[n-1]/arrayequation[n+1]
 					del arrayequation[n]
 					del arrayequation[n-1]
 					removing+=2
-					if removingfrom>n:
-						removingfrom=n
-				print ("after:",n,at2,removing,removingfrom, arrayequation,"(---2---)")
-				i+=1
-			i=0
-			for n in at1:
-				if removingfrom<n:
-					n-=removing
-				print ("before:",n,at1,removing,removingfrom, arrayequation,"(---1---)")
-				if n==0:
-					if arrayequation[n]=="-":
+					print ("<--",2,arrayequation,n,"-->")
+			for n in lengthrange:
+				print (n, length, removing)
+				n=n-removing
+				if n<0:
+					break
+				if n>=len(arrayequation):
+					pass
+				elif arrayequation[n]=="-":
+					removing-=1
+					n=findindex(arrayequation,"-")
+					if n==0:
 						arrayequation[n+1]*=-1
 						del arrayequation[n]
 						removing+=1
-						if removingfrom>n:
-							removingfrom=n
-				else:
-					if arrayequation[n]=="-":
+						print ("<--",1,arrayequation,n,"-->")
+					else:
 						arrayequation[n+1]=arrayequation[n-1]-arrayequation[n+1]
 						del arrayequation[n]
 						del arrayequation[n-1]
 						removing+=2
-						if removingfrom>n:
-							removingfrom=n
-					elif arrayequation[n]=="+":
-						arrayequation[n+1]+=arrayequation[n-1]
-						del arrayequation[n]
-						del arrayequation[n-1]
-						removing+=1
-						if removingfrom>n:
-							removingfrom=n
-				i+=1
-			i=0
+						print ("<--",1,arrayequation,n,"-->")
+				elif arrayequation[n]=="+":
+					removing-=1
+					n=findindex(arrayequation,"+")
+					arrayequation[n+1]+=arrayequation[n-1]
+					del arrayequation[n]
+					del arrayequation[n-1]
+					removing+=2
+					print ("<--",1,arrayequation,n,"-->")
 		except (ValueError, ZeroDivisionError):
 			e=False
+	print (arrayequation)
 	if e:
 		for n in arrayequation:
 			output+=n
 		return output
 	else:
-		return "Error2! There occoured an error while calculating"
+		return "Error2: There occoured an error while calculating"
 
 #what your bot does after its up and running
 while 1:
@@ -209,7 +217,7 @@ while 1:
 			ircquit()
 			break
 	
-	elif getname()=="Hastumer":
+	elif text.find(cmd) != -1 and getname()=="Hastumer":
 		ircsend("Sorry, but you are blacklisted")
 	
 	elif text.find(cmd + "help") != -1:
@@ -218,6 +226,7 @@ while 1:
 		ircsend('"*", "/", "+", "-", "()", "^"')
 	
 	elif text.find(cmd) != -1:
+		print ("__________started calculation__________")
 		i=0
 		array=[]
 		c1 = 0
@@ -236,7 +245,7 @@ while 1:
 		appending=0
 		d2=False
 		reading=False
-		list=[[]]
+		inputlist=[[]]
 		for a in text:
 			if a == '"' and c1>0:
 				c1 += 1
@@ -255,38 +264,42 @@ while 1:
 		equation=equation.replace("^",",^,")
 		equation=equation.replace(" ","")
 		arrayequation=equation.split(",")
+		if equation=="9,+,10":
+			e=False
+			ircsend(21.0)
 		if equation.find("e")!=-1 and e:
 			e=False
-			ircsend("Error3! There occoured an error while calculating")
+			ircsend('Error3: "e" is not supported')
 		for a in arrayequation:
 			if a=="":
 				pass
 			elif is_number(a):
 				c2=0
 				a=float(a)
-				list[appending].append(a)
+				inputlist[appending].append(a)
 			elif a=="*" or a=="/" or a=="+" or a=="-" or a=="^":
 				c2+=1
-				list[appending].append(a)
+				inputlist[appending].append(a)
 			elif a == "(":
-				list.append([])
+				c2=0
+				inputlist.append([])
 				appending+=1
-				list[appending-1].append(str(appending))
+				inputlist[appending-1].append(str(appending))
 			elif a == ")":
 				appending-=1
 			elif e:
 				e=False
-				ircsend("Error5! There occoured an error while calculating")
+				ircsend("Error4: Illegal characters")
 			if c2>1 and e:
 				e=False
-				ircsend("Error6! There occoured an error while calculating")
+				ircsend("Error5! incorrect usage of operators")
 			i+=1
 		i=0
 		if appending!=0:
 			e=False
-			ircsend("Error7! Fix your parentheses")
+			ircsend("Error6! Parenthesis inconsistant")
 		if e:
-			ircsend(calcexpression(list[0],c1))
+			ircsend(calcexpression(inputlist[0],c1))
 
 		i=0
 		array=[]
@@ -306,4 +319,4 @@ while 1:
 		appending=0
 		d2=False
 		reading=False
-		list=[[]]
+		inputlist=[[]]
