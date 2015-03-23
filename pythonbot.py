@@ -134,8 +134,8 @@ def calcexpression(arrayequation,c1):
 				n=n-removing
 				if n<0:
 					break
-				if n>=len(arrayequation):
-					pass
+				if n+1>=len(arrayequation):
+					e=False
 				elif arrayequation[n]=="^":
 					removing-=1
 					n=findindex(arrayequation,"^")
@@ -149,7 +149,7 @@ def calcexpression(arrayequation,c1):
 				n=n-removing
 				if n<0:
 					break
-				if n>=len(arrayequation):
+				if n+1>=len(arrayequation):
 					pass
 				elif arrayequation[n]=="*":
 					removing-=1
@@ -172,7 +172,7 @@ def calcexpression(arrayequation,c1):
 				n=n-removing
 				if n<0:
 					break
-				if n>=len(arrayequation):
+				if n+1>=len(arrayequation):
 					pass
 				elif arrayequation[n]=="-":
 					removing-=1
@@ -196,7 +196,7 @@ def calcexpression(arrayequation,c1):
 					del arrayequation[n-1]
 					removing+=2
 					print ("<--",1,arrayequation,n,"-->")
-		except (ValueError, ZeroDivisionError):
+		except (ValueError, ZeroDivisionError, OverflowError):
 			e=False
 	print (arrayequation)
 	if e:
